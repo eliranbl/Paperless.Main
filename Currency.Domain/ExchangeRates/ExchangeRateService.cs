@@ -3,37 +3,61 @@ using System.Text;
 
 namespace Currency.Domain.ExchangeRates
 {
+    /// <summary>
+    /// Exchange rate service.
+    /// </summary>
     public class ExchangeRateService : IExchangeRateService
     {
         private readonly ExchangeRateSettings _settings;
         private readonly HttpClient _httpClient;
-    
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="settings">Settings.</param>
+        /// <param name="httpClient">Http client.</param>
         public ExchangeRateService(IOptions<ExchangeRateSettings> settings, HttpClient httpClient)
         {
             _httpClient = httpClient;
             _settings = settings.Value;
         }
-        
+
+        /// <summary>
+        /// Get rate by year an month date async.
+        /// </summary>
+        /// <param name="date">Date on YYMM format</param>
+        /// <returns>Exchange rate response.</returns>
         public async Task<ExchangeRateResponse> GetByYearMonthDateAsync(string date)
         {
-            var exchangeRateApiRequest = GetExchangeRateApiRequest(date);
-
-            if (exchangeRateApiRequest is null)
+            try
             {
-                throw new Exception("Failed convert date to ExchangeRateResponse object");
+                var exchangeRateApiRequest = GetExchangeRateApiRequest(date);
+
+                if (exchangeRateApiRequest is null)
+                {
+                    throw new Exception("Failed convert date to ExchangeRateResponse object");
+                }
+
+                var exchangeRates = await GetExchangeRates(exchangeRateApiRequest);
+
+                var exchangeRateResponse = new ExchangeRateResponse
+                {
+                    Graph = exchangeRates,
+                    Min = exchangeRates.Min(x => x.Rate),
+                    Max = exchangeRates.Max(x => x.Rate)
+                };
+
+                return exchangeRateResponse;
             }
-
-            var exchangeRates = await GetExchangeRates(exchangeRateApiRequest);
-
-            var exchangeRateResponse = new ExchangeRateResponse
+            catch (Exception e)
             {
-                Graph = exchangeRates,
-                Min = exchangeRates.Min(x => x.Rate),
-                Max = exchangeRates.Max(x => x.Rate)
-            };
-
-            return exchangeRateResponse;
+                Console.WriteLine(e);
+                throw rn;
+            }
+            
         }
+
+        #region Private
 
         private async Task<List<ExchangeRate>> GetExchangeRates(ExchangeRateApiRequest request)
         {
@@ -65,7 +89,7 @@ namespace Currency.Domain.ExchangeRates
             var whitespace = new[] { ' ', '\t' };
             return input.Split(whitespace);
         }
-
+        
         private ExchangeRateApiRequest? GetExchangeRateApiRequest(string date)
         {
             var stringBuilder = new StringBuilder();
@@ -103,5 +127,8 @@ namespace Currency.Domain.ExchangeRates
             }
             return null;
         }
+
+        #endregion
+
     }
 }

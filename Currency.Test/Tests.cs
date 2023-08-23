@@ -6,13 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace Currency.Test
 {
     public class Tests
     {
         private Function _function;
-
+        
         [SetUp]
         public void Setup()
         {
@@ -21,8 +22,8 @@ namespace Currency.Test
                 .ConfigureWebJobs(startup.Configure)
                 .Build();
 
-            _function = new Function(host.Services.GetRequiredService<IExchangeRateService>(),
-                host.Services.GetRequiredService<ILogger<Function>>());
+            _function = new Function(host.Services.GetRequiredService<IExchangeRateService>());
+      
         }
 
         [Test]
@@ -30,9 +31,10 @@ namespace Currency.Test
         {
             // arrange
             var req = new DefaultHttpRequest(new DefaultHttpContext());
+            var logger = Mock.Of<ILogger>();
 
             // act
-            var response = await _function.Run(req, "2012");
+            var response = await _function.Run(req, 2012, logger);
 
             // assert
             var result = response.Result as OkObjectResult;
@@ -41,13 +43,13 @@ namespace Currency.Test
         }
 
         [Test]
-        public async Task SendWorngDateAndGetResponseAsync()
+        public async Task SendWrongDateAndGetResponseAsync()
         {
             // arrange
             var req = new DefaultHttpRequest(new DefaultHttpContext());
-
+            var logger = Mock.Of<ILogger>();
             // act
-            var response = await _function.Run(req, "2013");
+            var response = await _function.Run(req, 2013, logger);
 
             // assert
             var result = response.Result as BadRequestObjectResult;

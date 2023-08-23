@@ -16,7 +16,8 @@ namespace Currency
                 {
                     configuration.GetSection("ExchangeRateSettings").Bind(settings);
                 });
-            //Register HttpClientFactory
+            builder.Services.AddLogging();
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddHttpClient();
             builder.Services.AddSingleton<IExchangeRateService, ExchangeRateService>();
         }
