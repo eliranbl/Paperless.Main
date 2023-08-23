@@ -51,8 +51,7 @@ namespace Currency.Domain.ExchangeRates
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw rn;
+                throw new Exception($"Failed GetByYearMonthDateAsync {e.Message}");
             }
             
         }
