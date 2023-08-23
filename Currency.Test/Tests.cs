@@ -55,7 +55,7 @@ namespace Currency.Test
 
             // assert
             var responseData = await response.Content.ReadAsStringAsync();
-            responseData.Should().Be("Date have to be on format YYMM");
+            responseData.Should().Be("Date have to be on format YYMM, year start from 00");
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
     }
