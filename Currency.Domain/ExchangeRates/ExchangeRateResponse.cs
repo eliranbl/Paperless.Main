@@ -11,15 +11,5 @@ public class ExchangeRateResponse
     /// Graph.
     /// </summary>
     [JsonProperty("GRAPH")]
-    public List<ExchangeRate> Graph { get; set; }
-    
-    /// <summary>
-    /// Min value.
-    /// </summary>
-    public float Min { get; set; }
-
-    /// <summary>
-    /// Max value.
-    /// </summary>
-    public float Max { get; set; }
+    public List<Dictionary<string,string>> Graph { get; set; }
 }

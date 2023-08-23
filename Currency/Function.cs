@@ -42,15 +42,15 @@ public class Function
             req.HttpContext.Response.Headers.Add("Access-Control-Allow-Origin", "*");
 
             var dateRequest = date.ToString();
-            var regex = new Regex("^([0-9]{2})(0[1-9]|1[0-2])$");
+            var regex = new Regex("^([0-2]{1})([0-9]{1})(0[1-9]|1[0-2])$");
             if (!regex.IsMatch(dateRequest))
             {
                 logger.LogError("Failed process regex");
                 return new HttpResponseMessage(HttpStatusCode.BadRequest)
                 {
-                    Content = new StringContent("Date have to be on format YYMM", Encoding.UTF8, "application/json")
+                    Content = new StringContent("Date have to be on format YYMM, year start from 00",
+                        Encoding.UTF8, "application/json")
                 };
-                
             }
 
             var response = await _exchangeRateService.GetByYearMonthDateAsync(dateRequest);
@@ -58,7 +58,8 @@ public class Function
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(dataResponse, Encoding.UTF8, "application/json")
+                Content = new StringContent(dataResponse, Encoding.UTF8,
+                    "application/json")
             };
         }
         catch (Exception e)
@@ -66,7 +67,8 @@ public class Function
             logger.LogError($"Failed get data from service {e.Message}");
              return new HttpResponseMessage(HttpStatusCode.BadRequest)
                 {
-                    Content = new StringContent($"Failed get data from service {e.Message}", Encoding.UTF8, "application/json")
+                    Content = new StringContent($"Failed get data from service {e.Message}",
+                        Encoding.UTF8, "application/json")
                 };
             
         }

@@ -1,14 +1,13 @@
-using System.Net;
 using Currency.Domain.ExchangeRates;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace Currency.Test
 {
@@ -43,7 +42,6 @@ namespace Currency.Test
             var data = JsonConvert.DeserializeObject<ExchangeRateResponse>(responseData);
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             data.Should().NotBeNull();
-            data.Graph.Should().HaveCount(31);
         }
 
         [Test]
@@ -56,6 +54,8 @@ namespace Currency.Test
             var response = await _function.Run(req, 2013, logger);
 
             // assert
+            var responseData = await response.Content.ReadAsStringAsync();
+            responseData.Should().Be("Date have to be on format YYMM");
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
         }
     }

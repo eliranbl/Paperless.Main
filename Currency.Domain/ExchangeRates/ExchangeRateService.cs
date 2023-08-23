@@ -31,21 +31,21 @@ namespace Currency.Domain.ExchangeRates
         {
             try
             {
+                var exchangeRateResponse = new ExchangeRateResponse();
                 var exchangeRateApiRequest = GetExchangeRateApiRequest(date);
 
                 if (exchangeRateApiRequest is null)
-                {
                     throw new Exception("Failed convert date to ExchangeRateResponse object");
-                }
 
                 var exchangeRates = await GetExchangeRates(exchangeRateApiRequest);
+                if (!exchangeRates.Any())
+                    throw new Exception($"No data on this date, please check your date");
 
-                var exchangeRateResponse = new ExchangeRateResponse
-                {
-                    Graph = exchangeRates,
-                    Min = exchangeRates.Min(x => x.Rate),
-                    Max = exchangeRates.Max(x => x.Rate)
-                };
+                var dictionaryResult = exchangeRates.ToDictionary(item => item.DayOfMonth.ToString(), item => item.Rate.ToString());
+                dictionaryResult.Add("Min", exchangeRates.Min(x => x.Rate).ToString());
+                dictionaryResult.Add("Max", exchangeRates.Max(x => x.Rate).ToString());
+
+                exchangeRateResponse.Graph = new List<Dictionary<string, string>> { dictionaryResult };
 
                 return exchangeRateResponse;
             }
@@ -53,7 +53,7 @@ namespace Currency.Domain.ExchangeRates
             {
                 throw new Exception($"Failed GetByYearMonthDateAsync {e.Message}");
             }
-            
+
         }
 
         #region Private
@@ -88,7 +88,7 @@ namespace Currency.Domain.ExchangeRates
             var whitespace = new[] { ' ', '\t' };
             return input.Split(whitespace);
         }
-        
+
         private ExchangeRateApiRequest? GetExchangeRateApiRequest(string date)
         {
             var stringBuilder = new StringBuilder();
@@ -96,14 +96,7 @@ namespace Currency.Domain.ExchangeRates
             var year = date.Substring(0, offset);
             var month = date.Substring(2, offset);
 
-            if (year.StartsWith("9"))
-            {
-                stringBuilder.Append($"19{year}");
-            }
-            else
-            {
-                stringBuilder.Append($"20{year}");
-            }
+            stringBuilder.Append($"20{year}");
 
             year = stringBuilder.ToString();
             stringBuilder.Clear();
